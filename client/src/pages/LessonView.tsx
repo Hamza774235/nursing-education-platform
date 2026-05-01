@@ -1,7 +1,7 @@
 import { usePlatformAuth } from "@/hooks/usePlatformAuth";
 import { trpc } from "@/lib/trpc";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, CheckCircle2, Loader2, ClipboardCheck, Award, XCircle, ChevronLeft } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, Loader2, ClipboardCheck, Award, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -28,7 +28,7 @@ export default function LessonView() {
   const markCompleteMutation = trpc.progress.markComplete.useMutation({
     onSuccess: () => {
       utils.progress.getUserProgress.invalidate();
-      toast.success("تم تسجيل إكمال الدرس!");
+      toast.success("Lesson marked as complete!");
     },
   });
 
@@ -61,8 +61,8 @@ export default function LessonView() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-2">الدرس غير موجود</h2>
-          <Button onClick={() => setLocation("/dashboard")}>العودة</Button>
+          <h2 className="text-xl font-bold mb-2">Lesson not found</h2>
+          <Button onClick={() => setLocation("/dashboard")}>Go Back</Button>
         </div>
       </div>
     );
@@ -75,7 +75,7 @@ export default function LessonView() {
     if (!quiz) return;
     const allAnswered = quiz.questions.every(q => answers[q.id]);
     if (!allAnswered) {
-      toast.error("يرجى الإجابة على جميع الأسئلة");
+      toast.error("Please answer all questions");
       return;
     }
     submitQuizMutation.mutate({
@@ -92,20 +92,20 @@ export default function LessonView() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir="ltr">
       {/* Header */}
       <header className="bg-white border-b border-border sticky top-0 z-50">
         <div className="container flex items-center gap-3 h-16">
           <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
-            <ArrowRight className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="font-bold text-foreground truncate">{lesson.titleAr}</h1>
+            <h1 className="font-bold text-foreground truncate">{lesson.titleEn || lesson.titleAr}</h1>
           </div>
           {isCompleted && (
             <div className="flex items-center gap-1 text-emerald-600 text-sm">
               <CheckCircle2 className="w-4 h-4" />
-              <span className="hidden sm:inline">مكتمل</span>
+              <span className="hidden sm:inline">Completed</span>
             </div>
           )}
         </div>
@@ -121,11 +121,11 @@ export default function LessonView() {
             <CardContent className="p-6 md:p-8">
               {lesson.imageUrl && (
                 <div className="mb-6 rounded-xl overflow-hidden">
-                  <img src={lesson.imageUrl} alt={lesson.titleAr} className="w-full h-auto object-cover" />
+                  <img src={lesson.imageUrl} alt={lesson.titleEn || lesson.titleAr} className="w-full h-auto object-cover" />
                 </div>
               )}
-              <div className="prose prose-lg max-w-none" dir="rtl">
-                <Streamdown>{lesson.contentAr}</Streamdown>
+              <div className="prose prose-lg max-w-none" dir="ltr">
+                <Streamdown>{lesson.contentEn || lesson.contentAr}</Streamdown>
               </div>
             </CardContent>
           </Card>
@@ -150,7 +150,7 @@ export default function LessonView() {
               ) : (
                 <>
                   <CheckCircle2 className="w-5 h-5" />
-                  تم إكمال الدرس
+                  Mark as Complete
                 </>
               )}
             </Button>
@@ -167,9 +167,9 @@ export default function LessonView() {
             <Card className="border-primary/20 bg-primary/5">
               <CardContent className="p-6 text-center">
                 <ClipboardCheck className="w-12 h-12 text-primary mx-auto mb-3" />
-                <h3 className="text-lg font-bold mb-2">{quiz.titleAr}</h3>
+                <h3 className="text-lg font-bold mb-2">{quiz.titleEn || quiz.titleAr}</h3>
                 <p className="text-muted-foreground text-sm mb-4">
-                  {quiz.questions.length} أسئلة - درجة النجاح {quiz.passingScore}%
+                  {quiz.questions.length} questions - Passing score {quiz.passingScore}%
                 </p>
                 <Button
                   size="lg"
@@ -177,7 +177,7 @@ export default function LessonView() {
                   onClick={() => setShowQuiz(true)}
                 >
                   <ClipboardCheck className="w-5 h-5" />
-                  ابدأ الاختبار
+                  Start Quiz
                 </Button>
               </CardContent>
             </Card>
@@ -193,27 +193,27 @@ export default function LessonView() {
           >
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">{quiz.titleAr}</CardTitle>
+                <CardTitle className="text-lg">{quiz.titleEn || quiz.titleAr}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {quiz.questions.map((q, index) => (
                   <div key={q.id} className="space-y-3 pb-6 border-b border-border last:border-0 last:pb-0">
                     <h4 className="font-medium text-foreground">
-                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold ml-2">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold mr-2">
                         {index + 1}
                       </span>
-                      {q.questionAr}
+                      {q.questionEn || q.questionAr}
                     </h4>
                     <RadioGroup
                       value={answers[q.id] || ""}
                       onValueChange={(value) => setAnswers(prev => ({ ...prev, [q.id]: value }))}
-                      className="space-y-2 pr-9"
+                      className="space-y-2 pl-9"
                     >
                       {[
-                        { key: "A", text: q.optionAAr },
-                        { key: "B", text: q.optionBAr },
-                        { key: "C", text: q.optionCAr },
-                        { key: "D", text: q.optionDAr },
+                        { key: "A", text: q.optionAEn || q.optionAAr },
+                        { key: "B", text: q.optionBEn || q.optionBAr },
+                        { key: "C", text: q.optionCEn || q.optionCAr },
+                        { key: "D", text: q.optionDEn || q.optionDAr },
                       ].map(opt => (
                         <div key={opt.key} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                           <RadioGroupItem value={opt.key} id={`q${q.id}-${opt.key}`} />
@@ -235,7 +235,7 @@ export default function LessonView() {
                   {submitQuizMutation.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    "تسليم الإجابات"
+                    "Submit Answers"
                   )}
                 </Button>
               </CardContent>
@@ -256,21 +256,21 @@ export default function LessonView() {
                     <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
                       <Award className="w-10 h-10 text-emerald-600" />
                     </div>
-                    <h3 className="text-2xl font-bold text-emerald-700 mb-2">أحسنت! نجحت في الاختبار</h3>
+                    <h3 className="text-2xl font-bold text-emerald-700 mb-2">Congratulations! You Passed!</h3>
                   </>
                 ) : (
                   <>
                     <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
                       <XCircle className="w-10 h-10 text-red-600" />
                     </div>
-                    <h3 className="text-2xl font-bold text-red-700 mb-2">لم تنجح هذه المرة</h3>
+                    <h3 className="text-2xl font-bold text-red-700 mb-2">You didn't pass this time</h3>
                   </>
                 )}
                 <p className="text-lg mb-1">
-                  النتيجة: <span className="font-bold">{quizResult.score}%</span>
+                  Score: <span className="font-bold">{quizResult.score}%</span>
                 </p>
                 <p className="text-muted-foreground mb-6">
-                  أجبت بشكل صحيح على {quizResult.correct} من {quizResult.totalQuestions} سؤال
+                  You answered {quizResult.correct} of {quizResult.totalQuestions} questions correctly
                 </p>
                 <div className="flex gap-3 justify-center">
                   {!quizResult.passed && (
@@ -282,11 +282,11 @@ export default function LessonView() {
                         setShowQuiz(true);
                       }}
                     >
-                      أعد المحاولة
+                      Try Again
                     </Button>
                   )}
                   <Button onClick={() => window.history.back()}>
-                    العودة للقسم
+                    Back to Section
                   </Button>
                 </div>
               </CardContent>

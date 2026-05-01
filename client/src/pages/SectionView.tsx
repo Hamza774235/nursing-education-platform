@@ -1,7 +1,7 @@
 import { usePlatformAuth } from "@/hooks/usePlatformAuth";
 import { trpc } from "@/lib/trpc";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, CheckCircle2, Circle, Loader2, Lock, Heart, Stethoscope, Pill, Activity, FileText, ClipboardList } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, Loader2, Heart, Stethoscope, Pill, Activity, FileText, ClipboardList, Siren } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -9,6 +9,7 @@ import { useLocation, useParams } from "wouter";
 import { useEffect } from "react";
 
 const SECTION_ICONS: Record<string, any> = {
+  "icu": Siren,
   "assessment": ClipboardList,
   "procedures": Stethoscope,
   "medication": Pill,
@@ -17,6 +18,7 @@ const SECTION_ICONS: Record<string, any> = {
 };
 
 const SECTION_COLORS: Record<string, string> = {
+  "icu": "from-red-500 to-rose-600",
   "assessment": "from-emerald-500 to-teal-600",
   "procedures": "from-blue-500 to-indigo-600",
   "medication": "from-purple-500 to-violet-600",
@@ -53,8 +55,8 @@ export default function SectionView() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-2">القسم غير موجود</h2>
-          <Button onClick={() => setLocation("/dashboard")}>العودة</Button>
+          <h2 className="text-xl font-bold mb-2">Section not found</h2>
+          <Button onClick={() => setLocation("/dashboard")}>Go Back</Button>
         </div>
       </div>
     );
@@ -69,20 +71,20 @@ export default function SectionView() {
   const gradient = SECTION_COLORS[section.slug] || "from-gray-500 to-gray-600";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir="ltr">
       {/* Header */}
       <header className="bg-white border-b border-border sticky top-0 z-50">
         <div className="container flex items-center gap-3 h-16">
           <Button variant="ghost" size="icon" onClick={() => setLocation("/dashboard")}>
-            <ArrowRight className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-3 flex-1">
             <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center`}>
               <Icon className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-foreground">{section.titleAr}</h1>
-              <p className="text-xs text-muted-foreground">{lessons.length} دروس</p>
+              <h1 className="font-bold text-foreground">{section.titleEn || section.titleAr}</h1>
+              <p className="text-xs text-muted-foreground">{lessons.length} lessons</p>
             </div>
           </div>
         </div>
@@ -100,13 +102,13 @@ export default function SectionView() {
               <div className="flex items-center gap-4 mb-4">
                 <Icon className="w-10 h-10" />
                 <div>
-                  <h2 className="text-xl font-bold">{section.titleAr}</h2>
-                  <p className="text-white/80 text-sm">{section.descriptionAr}</p>
+                  <h2 className="text-xl font-bold">{section.titleEn || section.titleAr}</h2>
+                  <p className="text-white/80 text-sm">{section.descriptionEn || section.descriptionAr}</p>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-white/80">أكملت {completedCount} من {lessons.length} درس</span>
+                  <span className="text-white/80">Completed {completedCount} of {lessons.length} lessons</span>
                   <span className="font-bold">{progress}%</span>
                 </div>
                 <div className="w-full bg-white/20 rounded-full h-2.5">
@@ -127,7 +129,7 @@ export default function SectionView() {
             return (
               <motion.div
                 key={lesson.id}
-                initial={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
@@ -147,13 +149,12 @@ export default function SectionView() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className={`font-medium ${isCompleted ? "text-emerald-700" : "text-foreground"}`}>
-                        {lesson.titleAr}
+                        {lesson.titleEn || lesson.titleAr}
                       </h3>
                       {isCompleted && (
-                        <p className="text-xs text-emerald-600 mt-0.5">مكتمل</p>
+                        <p className="text-xs text-emerald-600 mt-0.5">Completed</p>
                       )}
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground rotate-180 shrink-0" />
                   </CardContent>
                 </Card>
               </motion.div>
@@ -163,8 +164,8 @@ export default function SectionView() {
           {lessons.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p className="font-medium">لا توجد دروس متاحة حالياً</p>
-              <p className="text-sm">سيتم إضافة الدروس قريباً</p>
+              <p className="font-medium">No lessons available yet</p>
+              <p className="text-sm">Lessons will be added soon</p>
             </div>
           )}
         </div>
